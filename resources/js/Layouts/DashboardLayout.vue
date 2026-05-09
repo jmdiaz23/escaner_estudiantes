@@ -17,6 +17,11 @@ import { Link } from '@inertiajs/vue3';
                 <li class="active">
                     <span class="icon">👥</span> Estudiantes
                 </li>
+                <li :class="{ 'active': $page.url.startsWith('/escaner') }">
+                    <Link :href="route('escaner.index')" style="color: inherit; text-decoration: none; display: flex; width: 100%;">
+                        <span class="icon">📷</span> Escáner QR
+                    </Link>
+                </li>
             </ul>
             <div class="sidebar-footer">
                 <Link :href="route('logout')" method="post" as="button" class="btn-logout" type="button">

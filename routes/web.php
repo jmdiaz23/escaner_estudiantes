@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EstudianteController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ScanController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -42,5 +43,12 @@ Route::put('/estudiantes/{id}', [EstudianteController::class, 'update'])->name('
 });
 
 
+// Rutas del Escáner
+Route::get('/escaner', function () {
+    //return Inertia\Inertia::render('Escaner/Index');
+    return Inertia::render('Escaner/Index');
+})->name('escaner.index');
+
+Route::post('/escaner/registrar', [ScanController::class, 'registrar'])->name('escaner.registrar');
 
 require __DIR__.'/auth.php';
