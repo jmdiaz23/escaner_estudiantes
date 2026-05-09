@@ -34,6 +34,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/estudiantes', [EstudianteController::class, 'index'])->name('estudiantes.index');
 Route::post('/estudiantes', [EstudianteController::class, 'store'])->name('estudiantes.store');
+Route::put('/estudiantes/{id}', [EstudianteController::class, 'update'])->name('estudiantes.update');
+    Route::delete('/estudiantes/{id}', [EstudianteController::class, 'destroy'])->name('estudiantes.destroy');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

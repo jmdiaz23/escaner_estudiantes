@@ -3,54 +3,91 @@
 namespace App\Http\Controllers;
 
 use App\Models\Estudiante;
+use App\Models\Curso;
+use App\Models\ScanLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class EstudianteController extends Controller
 {
-    // 1. Mostrar la tabla de estudiantes
     public function index()
     {
-        // Traemos todos los estudiantes (si no tienes cursos aún creados, podemos omitir el 'with')
+        // Traemos estudiantes con su curso asignado
         $estudiantes = Estudiante::with('curso')->orderBy('id_estudiante', 'desc')->get();
+        // Traemos los cursos 
+        $cursos = Curso::all();
+
+        // Calculamos las estadísticas
+        $stats = [
+            'total_estudiantes' => Estudiante::count(),
+            'total_cursos' => Curso::count(),
+            // Cuenta cuántos estudiantes distintos han escaneado hoy
+            'activos_hoy' => ScanLog::whereDate('fecha_hora', now()->toDateString())
+                                    ->distinct('id_estudiante')
+                                    ->count('id_estudiante'),
+        ];
 
         return Inertia::render('Estudiantes/Index', [
             'estudiantes' => $estudiantes,
+            'cursos' => $cursos,
+            'stats' => $stats,
         ]);
     }
 
-    // 2. Guardar estudiante y generar QR
     public function store(Request $request)
     {
         $request->validate([
             'nombre' => 'required|string|max:100',
             'apellido' => 'required|string|max:100',
+            'id_curso' => 'required|exists:cursos,id_curso', // Validamos el curso
         ]);
 
-        // Guardamos en la BD
         $estudiante = Estudiante::create([
             'nombre' => $request->nombre,
             'apellido' => $request->apellido,
-            'id_curso' => 1, // Curso por defecto por ahora para que no falle
+            'id_curso' => $request->id_curso,
             'estado' => 1,
         ]);
 
-        // Generamos la información del QR (El ID es lo vital para escanearlo después)
         $datosQr = json_encode([
             'id' => $estudiante->id_estudiante,
             'nombre' => $estudiante->nombre
         ]);
 
-        // Generamos el QR en formato SVG vectorial (Negro sobre transparente)
-        $qrSvg = (string) QrCode::size(200)
-            ->color(17, 24, 39) // Color oscuro del SICEAP
-            ->generate($datosQr);
+        $qrSvg = (string) QrCode::size(200)->color(17, 24, 39)->generate($datosQr);
 
-        // Redirigimos de vuelta enviando un mensaje de éxito y el QR
         return redirect()->route('estudiantes.index')->with([
             'mensaje' => 'Estudiante registrado correctamente.',
             'qrCode' => $qrSvg
         ]);
+    }
+
+    // Función para actualizar
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:100',
+            'apellido' => 'required|string|max:100',
+            'id_curso' => 'required|exists:cursos,id_curso',
+        ]);
+
+        $estudiante = Estudiante::findOrFail($id);
+        $estudiante->update([
+            'nombre' => $request->nombre,
+            'apellido' => $request->apellido,
+            'id_curso' => $request->id_curso,
+        ]);
+
+        return redirect()->route('estudiantes.index')->with('mensaje', 'Estudiante actualizado.');
+    }
+
+    // Función para eliminar
+    public function destroy($id)
+    {
+        $estudiante = Estudiante::findOrFail($id);
+        $estudiante->delete();
+
+        return redirect()->route('estudiantes.index')->with('mensaje', 'Estudiante eliminado.');
     }
 }

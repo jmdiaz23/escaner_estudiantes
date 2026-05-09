@@ -19,7 +19,6 @@ import { Link } from '@inertiajs/vue3';
                 </li>
             </ul>
             <div class="sidebar-footer">
-                <!-- Laravel Inertia Link para cerrar sesión de forma segura -->
                 <Link :href="route('logout')" method="post" as="button" class="btn-logout" type="button">
                     <span class="icon">🚪</span> Cerrar Sesión
                 </Link>
