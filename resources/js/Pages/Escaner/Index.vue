@@ -54,7 +54,7 @@ onMounted(() => {
     html5QrCode = new Html5Qrcode("reader");
     
     // Configuramos el tamaño del cuadro de lectura
-    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+    const config = { fps: 20, qrbox: { width: 280, height: 280 } };
 
     // Encendemos la cámara (pedirá permisos al navegador)
     html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
@@ -65,10 +65,19 @@ onMounted(() => {
         });
 });
 
-// Apagamos la cámara si el usuario cambia de página (para que no quede el foquito encendido)
-onBeforeUnmount(() => {
-    if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().catch(err => console.error(err));
+
+onBeforeUnmount(async () => {
+    if (html5QrCode) {
+        try {
+            // Verificamos si está escaneando para detenerlo
+            if (html5QrCode.getState() === 2) { // 2 significa "SCANNING"
+                await html5QrCode.stop();
+            }
+            html5QrCode.clear();
+        } catch (error) {
+            console.error("Error forzando el apagado de la cámara:", error);
+            window.location.reload(); 
+        }
     }
 });
 </script>
