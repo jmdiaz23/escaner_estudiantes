@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CursoController;
 use App\Http\Controllers\EstudianteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScanController;
@@ -37,9 +38,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/estudiantes', [EstudianteController::class, 'store'])->name('estudiantes.store');
 Route::put('/estudiantes/{id}', [EstudianteController::class, 'update'])->name('estudiantes.update');
     Route::delete('/estudiantes/{id}', [EstudianteController::class, 'destroy'])->name('estudiantes.destroy');
+    // Obtener el QR para verlo en el modal
+    Route::get('/estudiantes/{id}/qr', [EstudianteController::class, 'obtenerQr'])->name('estudiantes.qr');
+    // Descargar el QR directamente
+    Route::get('/estudiantes/{id}/qr/descargar', [EstudianteController::class, 'descargarQr'])->name('estudiantes.qr.descargar');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Rutas de Cursos
+    Route::get('/cursos', [CursoController::class, 'index'])->name('cursos.index');
+    Route::post('/cursos', [CursoController::class, 'store'])->name('cursos.store');
+    Route::put('/cursos/{id}', [CursoController::class, 'update'])->name('cursos.update');
+    Route::delete('/cursos/{id}', [CursoController::class, 'destroy'])->name('cursos.destroy');
 });
 
 

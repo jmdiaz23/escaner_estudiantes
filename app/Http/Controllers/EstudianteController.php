@@ -90,4 +90,38 @@ class EstudianteController extends Controller
 
         return redirect()->route('estudiantes.index')->with('mensaje', 'Estudiante eliminado.');
     }
+
+    // Genera el QR y lo devuelve  para mostrarlo
+    public function obtenerQr($id)
+    {
+        $estudiante = Estudiante::findOrFail($id);
+        
+        $datosQr = json_encode([
+            'id' => $estudiante->id_estudiante,
+            'nombre' => $estudiante->nombre
+        ]);
+
+        $qrSvg = (string) QrCode::size(250)->color(17, 24, 39)->generate($datosQr);
+
+        return response()->json(['qr' => $qrSvg]);
+    }
+
+    //  descarga del QR como un archivo de imagen vectorial (.svg)
+    public function descargarQr($id)
+    {
+        $estudiante = Estudiante::findOrFail($id);
+        
+        $datosQr = json_encode([
+            'id' => $estudiante->id_estudiante,
+            'nombre' => $estudiante->nombre
+        ]);
+
+        $qrSvg = (string) QrCode::size(300)->color(17, 24, 39)->generate($datosQr);
+
+        return response()->streamDownload(function () use ($qrSvg) {
+            echo $qrSvg;
+        }, 'QR_' . str_replace(' ', '_', $estudiante->nombre) . '.svg', [
+            'Content-Type' => 'image/svg+xml'
+        ]);
+    }
 }

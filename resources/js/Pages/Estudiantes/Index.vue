@@ -51,9 +51,22 @@ const eliminarEstudiante = (id) => {
     }
 };
 
-const verQR = (est) => {
-   
-    alert(`Aquí se mostrará de nuevo el QR de ${est.nombre}`);
+const verQR = async (est) => {
+    try {
+        // Pedimos el QR  sin recargar la página
+        const response = await axios.get(route('estudiantes.qr', est.id_estudiante));
+        
+        // Cargamos los datos en el modal
+        form.id_estudiante = est.id_estudiante; // Guardamos el ID para usarlo en la descarga
+        form.nombre = est.nombre;
+        form.apellido = est.apellido;
+        qrGeneradoSvg.value = response.data.qr; 
+        
+        tituloModal.value = `Carnet de ${est.nombre}`;
+        mostrarModal.value = true;
+    } catch (error) {
+        console.error("Error cargando el QR", error);
+    }
 };
 
 const guardarEstudiante = () => {
@@ -191,11 +204,20 @@ const obtenerIniciales = (nombre, apellido) => {
                         </select>
                     </div>
 
-                    <!-- El QR devuelto por Laravel -->
-                    <div v-if="qrGeneradoSvg" class="qr-container">
+                   
+                    <div v-if="qrGeneradoSvg" class="qr-container text-center">
                         <p>Código QR del Estudiante:</p>
-                        <div id="qr-result" v-html="qrGeneradoSvg"></div>
-                        <button type="button" class="btn-secondary" style="margin-top:10px; font-size: 12px;" onclick="window.print()">Imprimir Carnet</button>
+                        <div id="qr-result" v-html="qrGeneradoSvg" class="mb-3"></div>
+                        
+                     
+                        <div class="d-flex justify-content-center gap-2 mt-3">
+                            <button type="button" class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir</button>
+                            
+                           
+                            <a :href="route('estudiantes.qr.descargar', form.id_estudiante)" class="btn btn-primary text-white" style="text-decoration: none;" download>
+                                ⬇️ Descargar QR
+                            </a>
+                        </div>
                     </div>
 
                     <div class="modal-buttons">
