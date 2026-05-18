@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Curso;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Estudiante;
 
 class CursoController extends Controller
 {
@@ -54,4 +55,11 @@ class CursoController extends Controller
 
         return redirect()->route('cursos.index')->with('mensaje', 'Curso eliminado correctamente.');
     }
+
+    public function obtenerEstudiantes($id)
+    {
+        $estudiantes = Estudiante::where('id_curso', $id)->orderBy('nombre')->get();
+        return response()->json($estudiantes);
+    }
+
 }

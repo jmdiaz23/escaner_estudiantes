@@ -15,6 +15,11 @@ const form = useForm({
     nombre: '',
 });
 
+const mostrarModalLista = ref(false);
+const cursoSeleccionadoNombre = ref('');
+const listaEstudiantes = ref([]);
+const cargandoEstudiantes = ref(false);
+
 const abrirModalNuevo = () => {
     form.reset();
     form.clearErrors();
@@ -46,6 +51,21 @@ const guardarCurso = () => {
         form.post(route('cursos.store'), {
             onSuccess: () => mostrarModal.value = false
         });
+    }
+};
+const verEstudiantes = async (curso) => {
+    cursoSeleccionadoNombre.value = curso.nombre;
+    listaEstudiantes.value = []; 
+    cargandoEstudiantes.value = true;
+    mostrarModalLista.value = true;
+
+    try {
+        const response = await axios.get(route('cursos.estudiantes', curso.id_curso));
+        listaEstudiantes.value = response.data;
+    } catch (error) {
+        console.error("Error cargando la lista de estudiantes:", error);
+    } finally {
+        cargandoEstudiantes.value = false;
     }
 };
 </script>
@@ -83,6 +103,7 @@ const guardarCurso = () => {
                         <td><strong>#{{ curso.id_curso }}</strong></td>
                         <td>{{ curso.nombre }}</td>
                         <td class="text-center">
+                            <button class="btn-action text-info" @click="verEstudiantes(curso)" title="Ver Estudiantes matriculados">👥</button>
                             <button class="btn-action" @click="editarCurso(curso)" title="Editar">✏️</button>
                             <button class="btn-action text-danger" @click="eliminarCurso(curso.id_curso)" title="Eliminar">🗑️</button>
                         </td>
@@ -118,6 +139,42 @@ const guardarCurso = () => {
                 </form>
             </div>
         </div>
+
+        <div v-if="mostrarModalLista" class="modal" style="display: flex;">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>Estudiantes en {{ cursoSeleccionadoNombre }}</h3>
+                    <span class="close-modal" @click="mostrarModalLista = false">&times;</span>
+                </div>
+                
+                <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                    <div v-if="cargandoEstudiantes" class="text-center py-3 text-muted">
+                        Cargando lista...
+                    </div>
+                    
+                    <div v-else-if="listaEstudiantes.length === 0" class="text-center py-4 text-muted">
+                        📚 Aún no hay estudiantes matriculados en este curso.
+                    </div>
+                    
+                    <ul v-else class="list-group" style="list-style: none; padding: 0; margin: 0;">
+                        <li v-for="estudiante in listaEstudiantes" :key="estudiante.id_estudiante" 
+                            style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>{{ estudiante.nombre }} {{ estudiante.apellido }}</strong>
+                            </div>
+                            <span class="badge" :class="estudiante.estado ? 'bg-success' : 'bg-danger'" style="color: white; font-size: 11px;">
+                                {{ estudiante.estado ? 'Activo' : 'Inactivo' }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="modal-buttons mt-3">
+                    <button type="button" class="btn-primary btn-block" @click="mostrarModalLista = false">Cerrar Lista</button>
+                </div>
+            </div>
+        </div>
+
 
     </DashboardLayout>
 </template>

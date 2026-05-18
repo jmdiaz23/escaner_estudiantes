@@ -50,6 +50,7 @@ Route::put('/estudiantes/{id}', [EstudianteController::class, 'update'])->name('
     Route::post('/cursos', [CursoController::class, 'store'])->name('cursos.store');
     Route::put('/cursos/{id}', [CursoController::class, 'update'])->name('cursos.update');
     Route::delete('/cursos/{id}', [CursoController::class, 'destroy'])->name('cursos.destroy');
+    Route::get('/cursos/{id}/estudiantes', [CursoController::class, 'obtenerEstudiantes'])->name('cursos.estudiantes');
 });
 
 
