@@ -64,26 +64,26 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Opción de recordar sesión (opcional, muy útil en móviles) -->
+                <!-- Opción de recordar sesión (opcional, muy útil en móviles) 
                 <div class="options-group">
                     <label class="checkbox-container">
                         <input type="checkbox" v-model="form.remember">
                         <span class="checkmark"></span>
                         Recordarme
                     </label>
-                </div>
+                </div>-->
                 
                 <button type="submit" class="btn-primary" :disabled="form.processing">
                     <span v-if="form.processing">Procesando...</span>
                     <span v-else>Entrar al Sistema</span>
                 </button>
 
-                <!-- Enlace hacia la vista de registro -->
+                <!-- Enlace hacia la vista de registro 
                 <div class="register-section">
                     <p>¿No tienes una cuenta? 
                         <Link :href="route('register')" class="register-link">Regístrate aquí</Link>
                     </p>
-                </div>
+                </div>-->
                 
             </form>
         </div>
