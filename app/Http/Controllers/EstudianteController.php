@@ -11,18 +11,36 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class EstudianteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Traemos estudiantes con su curso asignado
-        $estudiantes = Estudiante::with('curso')->orderBy('id_estudiante', 'desc')->get();
+        $search = $request->input('search');
+        $cursoId = $request->input('id_curso'); 
+
+      
+        $query = Estudiante::with('curso')->orderBy('id_estudiante', 'desc');
         // Traemos los cursos 
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                  ->orWhere('apellido', 'like', "%{$search}%")
+                  ->orWhere('id_estudiante', 'like', "%{$search}%");
+            });
+        }
+
+       
+        if ($cursoId) {
+            $query->where('id_curso', $cursoId);
+        }
+
+        
+        $estudiantes = $query->paginate(5)->withQueryString();
         $cursos = Curso::all();
 
-        // Calculamos las estadísticas
+     
         $stats = [
             'total_estudiantes' => Estudiante::count(),
             'total_cursos' => Curso::count(),
-            // Cuenta cuántos estudiantes distintos han escaneado hoy
+           
             'activos_hoy' => ScanLog::whereDate('fecha_hora', now()->toDateString())
                                     ->distinct('id_estudiante')
                                     ->count('id_estudiante'),
@@ -32,6 +50,8 @@ class EstudianteController extends Controller
             'estudiantes' => $estudiantes,
             'cursos' => $cursos,
             'stats' => $stats,
+            'search_actual' => $search ?? '',
+            'curso_actual' => $cursoId ?? '',
         ]);
     }
 

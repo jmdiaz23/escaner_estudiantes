@@ -13,18 +13,27 @@ import { Link } from '@inertiajs/vue3';
                     <span class="brand-tagline">IED</span>
                 </div>
             </div>
-            <ul class="nav-links">
-                <li class="active">
-                    <span class="icon">👥</span> Estudiantes
+           <ul class="nav-links">
+                <li :class="{ 'active': $page.url.startsWith('/estudiantes') }">
+                    <Link :href="route('estudiantes.index')" style="color: inherit; text-decoration: none; display: flex; width: 100%;">
+                        <span class="icon">👥</span> Estudiantes
+                    </Link>
                 </li>
+                
                 <li :class="{ 'active': $page.url.startsWith('/escaner') }">
                     <Link :href="route('escaner.index')" style="color: inherit; text-decoration: none; display: flex; width: 100%;">
                         <span class="icon">📷</span> Escáner QR
                     </Link>
                 </li>
+                
                 <li :class="{ 'active': $page.url.startsWith('/cursos') }">
                     <Link :href="route('cursos.index')" style="color: inherit; text-decoration: none; display: flex; width: 100%;">
                         <span class="icon">📚</span> Cursos
+                    </Link>
+                </li>
+                <li :class="{ 'active': $page.url.startsWith('/asistencias') }">
+                    <Link :href="route('asistencias.index')" style="color: inherit; text-decoration: none; display: flex; width: 100%;">
+                        <span class="icon">📅</span> Asistencias
                     </Link>
                 </li>
             </ul>

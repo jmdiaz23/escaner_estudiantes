@@ -5,77 +5,91 @@ import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { Html5Qrcode } from 'html5-qrcode';
 import axios from 'axios';
 
-const mensaje = ref('');
-const tipoAlerta = ref(''); 
+const mensajeError = ref('');
 const procesando = ref(false);
 let html5QrCode = null;
 
-// Función que se ejecuta cuando la cámara detecta un QR
+// Variables para el Modal de Éxito
+const mostrarModalExito = ref(false);
+const datosEstudiante = ref(null);
+
 const onScanSuccess = async (decodedText) => {
-    // Si ya estamos procesando un código, ignoramos los demás para no saturar el servidor
     if (procesando.value) return;
     procesando.value = true;
+    mensajeError.value = '';
 
     try {
-        // Convertimos el texto del QR (que guardamos como JSON en Laravel) a un objeto
         const datosQr = JSON.parse(decodedText);
-        
-        if (!datosQr.id) throw new Error("QR no pertenece al sistema.");
+        if (!datosQr.id) throw new Error("QR inválido.");
 
-        // Hacemos la petición silenciosa a nuestro ScanController
         const response = await axios.post(route('escaner.registrar'), {
             id_estudiante: datosQr.id
         });
 
-        mensaje.value = response.data.mensaje;
-        tipoAlerta.value = 'success';
+        // Si es exitoso, cargamos los datos y abrimos el modal
+        datosEstudiante.value = response.data.estudiante;
+        mostrarModalExito.value = true;
 
-        // Opcional: Reproducir un sonido de "Beep" de éxito aquí
+        // Reproducir un sonido de "Beep" exitoso (Opcional, pero da buen UX)
+        try {
+            const audio = new Audio('/sonidos/beep.mp3'); // Puedes agregar un mp3 en public/sonidos/
+            audio.play();
+        } catch (e) {}
+
+        // El modal se cierra automáticamente después de 4 segundos para el siguiente estudiante
+        setTimeout(() => {
+            cerrarModal();
+        }, 6000);
 
     } catch (error) {
         console.error(error);
-        tipoAlerta.value = 'error';
         if (error.response && error.response.data) {
-            mensaje.value = error.response.data.mensaje; // Mensaje del backend (ej. inactivo)
+            mensajeError.value = error.response.data.mensaje;
         } else {
-            mensaje.value = 'Error al leer el QR. Asegúrate de que sea un carnet válido de SICEAP.';
+            mensajeError.value = 'Error de lectura. Intente nuevamente.';
         }
+        
+        // Si hay error, liberamos la cámara rápido
+        setTimeout(() => {
+            procesando.value = false;
+            mensajeError.value = '';
+        }, 3000);
     }
+};
 
-    // Esperamos 3 segundos antes de permitir que se escanee el siguiente carnet
+const cerrarModal = () => {
+    mostrarModalExito.value = false;
+    datosEstudiante.value = null;
+    // Damos medio segundo extra antes de liberar la cámara para evitar dobles lecturas accidentales
     setTimeout(() => {
         procesando.value = false;
-        mensaje.value = '';
-    }, 3000);
+    }, 500);
 };
 
 onMounted(() => {
-    // Inicializamos la cámara en el div con id "reader"
     html5QrCode = new Html5Qrcode("reader");
     
-    // Configuramos el tamaño del cuadro de lectura
-    const config = { fps: 20, qrbox: { width: 280, height: 280 } };
+    const config = { 
+        fps: 20, 
+        qrbox: { width: 280, height: 280 },
+        aspectRatio: 1.0
+    };
 
-    // Encendemos la cámara (pedirá permisos al navegador)
     html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
         .catch((err) => {
-            console.error("Error al iniciar cámara:", err);
-            mensaje.value = "No se pudo acceder a la cámara. Verifica los permisos de tu navegador.";
-            tipoAlerta.value = 'error';
+            console.error("Error:", err);
+            mensajeError.value = "No se pudo iniciar la cámara.";
         });
 });
-
 
 onBeforeUnmount(async () => {
     if (html5QrCode) {
         try {
-            // Verificamos si está escaneando para detenerlo
-            if (html5QrCode.getState() === 2) { // 2 significa "SCANNING"
+            if (html5QrCode.getState() === 2) {
                 await html5QrCode.stop();
             }
             html5QrCode.clear();
         } catch (error) {
-            console.error("Error forzando el apagado de la cámara:", error);
             window.location.reload(); 
         }
     }
@@ -83,26 +97,23 @@ onBeforeUnmount(async () => {
 </script>
 
 <template>
-    <Head title="Escáner - LICEO-SAMARIO" />
+    <Head title="Escáner - LICEO SAMARIO" />
     <DashboardLayout>
-        
         <div class="container mt-4">
             <div class="row justify-content-center text-center">
                 <div class="col-md-8">
-                    <h2 class="mb-3" style="font-weight: 600; color: var(--primary-color);">Punto de Control SICEAP</h2>
+                    <h2 class="mb-3" style="font-weight: 600; color: var(--primary-color);">Punto de Control LICEO SAMARIO</h2>
                     <p class="text-muted mb-4">Posiciona el código QR del carnet estudiantil frente a la cámara.</p>
 
-                    <!-- Mensajes de Alerta -->
-                    <div v-if="mensaje" 
-                         class="alert shadow-sm" 
-                         :class="tipoAlerta === 'success' ? 'alert-success' : 'alert-danger'" 
-                         role="alert"
-                         style="font-size: 1.1rem; font-weight: 500;">
-                        {{ mensaje }}
+                    <div v-if="mensajeError" class="alert alert-danger shadow-sm mb-3" role="alert" style="font-size: 1.1rem; font-weight: 500;">
+                        ❌ {{ mensajeError }}
                     </div>
 
-                    <!-- Contenedor de la Cámara -->
-                    <div class="card shadow-sm border-0">
+                    <div class="card shadow-sm border-0 position-relative">
+                        <div v-if="procesando && !mensajeError" class="position-absolute w-100 h-100 d-flex justify-content-center align-items-center" style="background: rgba(255,255,255,0.8); z-index: 10;">
+                            <h4 class="text-primary">Procesando...</h4>
+                        </div>
+
                         <div class="card-body p-1" style="background-color: #000; border-radius: 8px; overflow: hidden;">
                             <div id="reader" width="100%"></div>
                         </div>
@@ -111,11 +122,46 @@ onBeforeUnmount(async () => {
             </div>
         </div>
 
+        <div v-if="mostrarModalExito" class="modal" style="display: flex; background: rgba(0,0,0,0.6);">
+            <div class="modal-content text-center" style="max-width: 450px; border-radius: 20px; border-top: 8px solid #10b981;">
+                
+                <div style="font-size: 60px; color: #10b981; margin-top: -10px;">
+                    ✅
+                </div>
+                
+                <h2 style="color: #111827; margin-bottom: 5px;">¡Asistencia Registrada!</h2>
+                <p class="text-muted" style="margin-bottom: 20px;">El acceso ha sido guardado en el sistema.</p>
+                
+                <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; text-align: left;">
+                    <div style="margin-bottom: 10px;">
+                        <small class="text-muted d-block">Estudiante</small>
+                        <strong style="font-size: 18px; color: #1f2937;">{{ datosEstudiante.nombre_completo }}</strong>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>
+                            <small class="text-muted d-block">Curso</small>
+                            <strong style="color: #3b82f6;">{{ datosEstudiante.curso }}</strong>
+                        </div>
+                        <div style="text-align: right;">
+                            <small class="text-muted d-block">Hora de Ingreso</small>
+                            <strong style="color: #1f2937;">{{ datosEstudiante.hora_ingreso }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button class="btn-primary w-100" style="padding: 12px; font-size: 16px;" @click="cerrarModal">
+                        Siguiente Estudiante (Cerrar)
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </DashboardLayout>
 </template>
 
 <style scoped>
-/* Aseguramos que el escáner se vea bien en pantallas grandes */
 #reader {
     width: 100%;
     max-width: 600px;

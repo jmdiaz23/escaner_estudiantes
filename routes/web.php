@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AsistenciaController;
 use App\Http\Controllers\CursoController;
 use App\Http\Controllers\EstudianteController;
 use App\Http\Controllers\ProfileController;
@@ -51,6 +52,8 @@ Route::put('/estudiantes/{id}', [EstudianteController::class, 'update'])->name('
     Route::put('/cursos/{id}', [CursoController::class, 'update'])->name('cursos.update');
     Route::delete('/cursos/{id}', [CursoController::class, 'destroy'])->name('cursos.destroy');
     Route::get('/cursos/{id}/estudiantes', [CursoController::class, 'obtenerEstudiantes'])->name('cursos.estudiantes');
+    // Ruta de Asistencias
+    Route::get('/asistencias', [AsistenciaController::class, 'index'])->name('asistencias.index');
 });
 
 

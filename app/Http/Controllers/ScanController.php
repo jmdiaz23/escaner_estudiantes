@@ -39,16 +39,24 @@ class ScanController extends Controller
             ], 403);
         }
 
-        // 3. Todo está en orden, registramos la entrada exitosa
+        // 3. Si todo es correcto, registramos la asistencia
         ScanLog::create([
             'id_estudiante' => $estudiante->id_estudiante,
             'resultado' => 'Exitoso',
             'mensaje' => 'Entrada registrada correctamente.'
         ]);
 
+        $estudiante->load('curso');
+
         return response()->json([
             'status' => 'success',
-            'mensaje' => "¡Asistencia registrada para {$estudiante->nombre} {$estudiante->apellido}!"
+            'mensaje' => '¡Asistencia Registrada!',
+            'estudiante' => [
+                'nombre_completo' => $estudiante->nombre . ' ' . $estudiante->apellido,
+                'curso' => $estudiante->curso ? $estudiante->curso->nombre : 'Sin curso asignado',
+                'hora_ingreso' => now()->format('h:i A'),
+                'estado' => 'Activo'
+            ]
         ], 200);
     }
 }

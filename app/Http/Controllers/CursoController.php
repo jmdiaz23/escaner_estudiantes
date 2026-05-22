@@ -10,13 +10,23 @@ use App\Models\Estudiante;
 class CursoController extends Controller
 {
    
-    public function index()
+    public function index(Request $request)
     {
         
-        $cursos = Curso::orderBy('id_curso', 'desc')->get();
+        $search = $request->input('search');
+
+        $query = Curso::orderBy('id_curso', 'desc');
+
+        if ($search) {
+            $query->where('nombre', 'like', "%{$search}%");
+        }
+
+       
+        $cursos = $query->paginate(15)->withQueryString();
         
         return Inertia::render('Cursos/Index', [
             'cursos' => $cursos,
+            'search_actual' => $search ?? '',
         ]);
     }
 

@@ -19,4 +19,10 @@ protected $table = 'scan_logs';
         'resultado',
         'mensaje'
     ];
+
+    
+    public function estudiante()
+    {
+        return $this->belongsTo(Estudiante::class, 'id_estudiante', 'id_estudiante');
+    }
 }
