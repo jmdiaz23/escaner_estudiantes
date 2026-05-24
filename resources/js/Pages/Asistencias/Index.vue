@@ -63,7 +63,7 @@ const imprimirReporte = () => {
                         <th width="15%">Hora</th>
                         <th>Estudiante</th>
                         <th>Curso</th>
-                        <th width="15%">Resultado</th>
+                        <th width="15%">Asistencia</th>
                     </tr>
                 </thead>
                 <tbody>

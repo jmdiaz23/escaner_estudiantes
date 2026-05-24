@@ -20,6 +20,7 @@ import { Link } from '@inertiajs/vue3';
                     </Link>
                 </li>
                 
+                
                 <li :class="{ 'active': $page.url.startsWith('/escaner') }">
                     <Link :href="route('escaner.index')" style="color: inherit; text-decoration: none; display: flex; width: 100%;">
                         <span class="icon">📷</span> Escáner QR
@@ -48,13 +49,9 @@ import { Link } from '@inertiajs/vue3';
         <section class="main-content">
             <header class="main-header">
                 <div class="header-title">
-                    <p>Bienvenido de nuevo,</p>
                     <h2>Gestión de Estudiantes</h2>
                 </div>
-                <div class="search-bar">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" placeholder="Buscar estudiante por nombre o ID...">
-                </div>
+             
             </header>
 
             <!-- Aquí se inyecta la vista de Estudiantes -->
