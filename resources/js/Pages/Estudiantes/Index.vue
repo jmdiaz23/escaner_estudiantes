@@ -105,7 +105,7 @@ const obtenerIniciales = (nombre, apellido) => {
         
         <div class="stats-grid">
             <div class="stat-card"><div class="stat-icon blue">👥</div><div class="stat-info"><h3>Total Estudiantes</h3><p class="stat-value">{{ stats.total_estudiantes }}</p></div></div>
-            <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><h3>Activos Hoy</h3><p class="stat-value">{{ stats.activos_hoy }}</p></div></div>
+
             <div class="stat-card"><div class="stat-icon purple">📚</div><div class="stat-info"><h3>Cursos Totales</h3><p class="stat-value">{{ stats.total_cursos }}</p></div></div>
         </div>
 
